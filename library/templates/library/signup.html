@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>signUp Page</title>
+</head>
+
+<body>
+    <div>
+        <nav class='navbar'>
+            <div class='logo'>
+                <h2>Online Library</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'signup' %}">Sign Up</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <section class="signup-container">
+        <h2>Sign Up</h2>
+
+        {% if form.errors %} {% for field in form %} {% for error in field.errors %}
+        <p style="color:red;">{{ error }}</p>
+        {% endfor %} {% endfor %} {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <label>Username:</label>
+            <input type="text" name="username" required>
+            <label>Email:</label>
+            <input type="email" name="email" required>
+            <label>Password:</label>
+            <input type="password" name="password1" required>
+            <label>Confirm Password:</label>
+            <input type="password" name="password2" required>
+            <div class="radio-group">
+                <p>Account Type:</p>
+                <input type="radio" name="role" value="member"> Member
+                <input type="radio" name="role" value="admin"> Admin
+            </div>
+            <input type="submit" value="Sign Up">
+        </form>
+    </section>
+</body>
+
+</html>
