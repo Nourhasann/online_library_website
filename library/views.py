@@ -2,6 +2,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
 from .forms import SignupForm
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Book, Borrow
+from django.utils import timezone
+
 
 User = get_user_model()
 
@@ -47,4 +54,55 @@ def logout_view(request):
     logout(request) # clear the session — user is now logged out
     return redirect('login') # redirect to the login page after logout
  
+
+@login_required
+@require_POST
+def borrow_view(request, id):
+    book = get_object_or_404(Book, id=id)
+    
+    if not book.available:
+        return JsonResponse({'error': 'Book is not available'}, status=400)
+    
+    # Mark book as unavailable
+    book.available = False
+    book.save()
+    
+    # Create a borrow record
+    Borrow.objects.create(user=request.user, book=book)
+    
+    return JsonResponse({'status': 'borrowed'})
+
+
+@login_required
+@require_POST
+def return_view(request, id):
+    book = get_object_or_404(Book, id=id)
+    
+    # Find the active borrow record for this user and book
+    record = Borrow.objects.filter(
+        user=request.user, book=book, returned=False
+    ).first()
+    
+    if not record:
+        return JsonResponse({'error': 'No active borrow record found'}, status=400)
+    
+    # Update the record
+    record.returned = True
+    record.return_date = timezone.now()
+    record.save()
+    
+    # Mark book as available again
+    book.available = True
+    book.save()
+    
+    return JsonResponse({'status': 'returned'})
+
+
+@login_required
+def borrowed_books_view(request):
+    records = Borrow.objects.filter(
+        user=request.user, returned=False
+    ).select_related('book')
+    
+    return render(request, 'library/borrowed_books.html', {'records': records})
 
