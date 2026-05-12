@@ -34,17 +34,23 @@
         <form method="POST">
             {% csrf_token %}
             <label>Username:</label>
-            <input type="text" name="username" required>
+            <input type="text" name="username" value="{{ form.username.value|default:'' }}" required>
+
             <label>Email:</label>
-            <input type="email" name="email" required>
+            <input type="email" name="email" value="{{ form.email.value|default:'' }}" required>
+
             <label>Password:</label>
             <input type="password" name="password1" required>
+
             <label>Confirm Password:</label>
             <input type="password" name="password2" required>
+
             <div class="radio-group">
                 <p>Account Type:</p>
-                <input type="radio" name="role" value="member"> Member
-                <input type="radio" name="role" value="admin"> Admin
+                <input type="radio" name="role" value="member"
+                    {% if request.POST.role == 'member' %}checked{% endif %}> Member
+                <input type="radio" name="role" value="admin"
+                    {% if request.POST.role == 'admin' %}checked{% endif %}> Admin
             </div>
             <input type="submit" value="Sign Up">
         </form>
