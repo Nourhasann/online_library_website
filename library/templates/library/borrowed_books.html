@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+        <title>Borrowed Books Page</title>
+    </head>
+    <body>
+        <div>
+            <nav class='navbar'>
+                <div class='logo'>
+                    <h2>Online Library</h2>
+                </div>
+                <ul id="nav-links" class="nav-links"></ul>
+            </nav>
+        </div>
+
+        <h1 class="page-title">My Borrowed Books</h1>
+
+        <table>
+            <tr>
+                <th>Book Id</th>
+                <th>Book Name</th>
+                <th>Author</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            <tbody id="borrowedTableBody">
+                {% if records %}
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.book.id }}</td>
+                        <td>{{ record.book.title }}</td>
+                        <td>{{ record.book.author }}</td>
+                        <td>{{ record.book.category }}</td>
+                        <td>Borrowed on {{ record.borrow_date|date:"M d, Y" }}</td>
+                        <td>
+                            <button class="return-btn" data-book-id="{{ record.book.id }}">
+                                Return
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6">You have no currently borrowed books.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <script src="{% static 'Navbar.js' %}"></script>
+
+        <script>
+            document.querySelectorAll('.return-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const bookId = btn.dataset.bookId;
+                    const csrfToken = '{{ csrf_token }}';
+
+                    const response = await fetch(`/books/${bookId}/return/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        btn.closest('tr').remove();
+                    } else {
+                        alert(data.error || 'Something went wrong.');
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
