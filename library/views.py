@@ -40,9 +40,9 @@ def login_view(request):
             if user is not None:  # if authentication was successful (email exists and password is correct)
                 login(request, user)  # save session — user is now logged in
                 if user.role == 'admin':
-                    return redirect('login')
+                    return redirect('borrowed_books')
                 else:
-                    return redirect('login')
+                    return redirect('borrowed_books')
             else:
                 error = 'Wrong email or password. Please try again.'
         except User.DoesNotExist:
