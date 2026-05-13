@@ -1,64 +1,51 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <title>Add Book</title>
-</head>
-<body>
-    <nav class="navbar">
-        <div class="logo"><h2>Online Library</h2></div>
-        <ul class="nav-links">
-            <li><a href="{% url 'logout' %}">Logout</a></li>
-        </ul>
-    </nav>
 
-    <a href="{% url 'book_list' %}" class="back-button">Back</a>
-    <h1 align="center" style="margin-top:40px;">Enter Book Information</h1>
+{% block content %}
+<a href="{% url 'book_list' %}" class="back-button">Back</a>
+<h1 align="center" style="margin-top:40px;">Enter Book Information</h1>
 
-    <fieldset>
-        <form method="POST">
-            {% csrf_token %}
-            {% if form.errors %}
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <p style="color:red;">{{ error }}</p>
-                    {% endfor %}
+<fieldset>
+    <form method="POST">
+        {% csrf_token %}
+        {% if form.errors %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <p style="color:red;">{{ error }}</p>
                 {% endfor %}
-            {% endif %}
-            <div class="form-row">
-                <div class="form-column">
-                    <label>Book Title</label>
-                    <input type="text" name="title" value="{{ form.title.value|default:'' }}" required>
-                </div>
-                <div class="form-column">
-                    <label>Author</label>
-                    <input type="text" name="author" value="{{ form.author.value|default:'' }}" required>
-                </div>
+            {% endfor %}
+        {% endif %}
+        <div class="form-row">
+            <div class="form-column">
+                <label>Book Title</label>
+                <input type="text" name="title" value="{{ form.title.value|default:'' }}" required>
             </div>
-            <div class="form-row">
-                <div class="form-column">
-                    <label>Category</label>
-                    <select name="category">
-                        {% for val, label in form.fields.category.choices %}
-                            <option value="{{ val }}" {% if form.category.value == val %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-column">
-                    <label>Cover Image filename</label>
-                    <input type="text" name="cover_image" value="{{ form.cover_image.value|default:'' }}" placeholder="e.g. AI Basics.jpg">
-                </div>
+            <div class="form-column">
+                <label>Author</label>
+                <input type="text" name="author" value="{{ form.author.value|default:'' }}" required>
             </div>
-            <div>
-                <label>Description</label><br>
-                <textarea name="description" rows="4" cols="30">{{ form.description.value|default:'' }}</textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-column">
+                <label>Category</label>
+                <select name="category">
+                    {% for val, label in form.fields.category.choices %}
+                        <option value="{{ val }}" {% if form.category.value == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
             </div>
-            <br>
-            <input type="submit" value="ADD BOOK">
-            <input type="reset" value="RESET">
-        </form>
-    </fieldset>
-</body>
-</html>
+            <div class="form-column">
+                <label>Cover Image filename</label>
+                <input type="text" name="cover_image" value="{{ form.cover_image.value|default:'' }}" placeholder="e.g. AI Basics.jpg">
+            </div>
+        </div>
+        <div>
+            <label>Description</label><br>
+            <textarea name="description" rows="4" cols="30">{{ form.description.value|default:'' }}</textarea>
+        </div>
+        <br>
+        <input type="submit" value="ADD BOOK">
+        <input type="reset" value="RESET">
+    </form>
+</fieldset>
+{% endblock %}
