@@ -1,91 +1,72 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <title>Books List</title>
-</head>
-<body>
-    <nav class="navbar">
-        <div class="logo"><h2>Online Library</h2></div>
-        <ul class="nav-links">
-            <li><a href="#">About</a></li>
-            <li><a href="#">Contact</a></li>
-            {% if request.user.is_authenticated %}
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-            {% else %}
-                <li><a href="{% url 'login' %}">Login</a></li>
-                <li><a href="{% url 'signup' %}">Sign Up</a></li>
+
+{% block content %}
+
+<h1 class="page-title">Books List</h1>
+
+{% if request.user.is_authenticated and request.user.role == 'admin' %}
+<div style="text-align:center; margin:20px;">
+    <a href="{% url 'add_book' %}" class="add-book-btn" style="text-decoration:none; padding:12px 24px;">+ Add Book</a>
+</div>
+{% endif %}
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Book Name</th>
+            <th>Author</th>
+            <th>Category</th>
+            {% if not request.user.is_authenticated or request.user.role != 'admin' %}
+            <th>Status</th>
             {% endif %}
-        </ul>
-    </nav>
-
-    <h1 class="page-title">Books List</h1>
-
-    {% if request.user.is_authenticated and request.user.role == 'admin' %}
-    <div style="text-align:center; margin:20px;">
-        <a href="{% url 'add_book' %}" class="add-book-btn" style="text-decoration:none; padding:12px 24px;">+ Add Book</a>
-    </div>
-    {% endif %}
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Book Name</th>
-                <th>Author</th>
-                <th>Category</th>
-                {% if not request.user.is_authenticated or request.user.role != 'admin' %}
-                <th>Status</th>
+            <th>Details</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td>{{ book.id }}</td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.category }}</td>
+            {% if not request.user.is_authenticated or request.user.role != 'admin' %}
+            <td>
+                {% if book.is_borrowed %}
+                    <span class="borrowed">Borrowed</span>
+                {% else %}
+                    <span class="available">Available</span>
                 {% endif %}
-                <th>Details</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for book in books %}
-            <tr>
-                <td>{{ book.id }}</td>
-                <td>{{ book.title }}</td>
-                <td>{{ book.author }}</td>
-                <td>{{ book.category }}</td>
-                {% if not request.user.is_authenticated or request.user.role != 'admin' %}
-                <td>
-                    {% if book.is_borrowed %}
-                        <span class="borrowed">Borrowed</span>
+            </td>
+            {% endif %}
+            <td><a href="{% url 'book_details' book.id %}">View</a></td>
+            <td>
+                {% if request.user.is_authenticated and request.user.role == 'admin' %}
+                    <a href="{% url 'edit_book' book.id %}"><button class="edit-btn">Edit</button></a>
+                    &nbsp;
+                    <form method="POST" action="{% url 'delete_book' book.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button class="delete-btn" onclick="return confirm('Delete this book?')">Delete</button>
+                    </form>
+                {% elif request.user.is_authenticated %}
+                    {% if not book.is_borrowed %}
+                        <a href="{% url 'book_details' book.id %}"><button class="borrow-btn">Borrow</button></a>
+                    {% elif book.borrowed_by_me %}
+                        <a href="{% url 'book_details' book.id %}"><button class="return-btn">Return</button></a>
                     {% else %}
-                        <span class="available">Available</span>
+                        <span style="color:#999;">—</span>
                     {% endif %}
-                </td>
+                {% else %}
+                    <a href="{% url 'login' %}"><button class="borrow-btn">Borrow</button></a>
                 {% endif %}
-                <td><a href="{% url 'book_details' book.id %}">View</a></td>
-                <td>
-                    {% if request.user.is_authenticated and request.user.role == 'admin' %}
-                        <a href="{% url 'edit_book' book.id %}"><button class="edit-btn">Edit</button></a>
-                        &nbsp;
-                        <form method="POST" action="{% url 'delete_book' book.id %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button class="delete-btn" onclick="return confirm('Delete this book?')">Delete</button>
-                        </form>
-                    {% elif request.user.is_authenticated %}
-                        {% if not book.is_borrowed %}
-                            <a href="{% url 'book_details' book.id %}"><button class="borrow-btn">Borrow</button></a>
-                        {% elif book.borrowed_by_me %}
-                            <a href="{% url 'book_details' book.id %}"><button class="return-btn">Return</button></a>
-                        {% else %}
-                            <span style="color:#999;">—</span>
-                        {% endif %}
-                    {% else %}
-                        <a href="{% url 'login' %}"><button class="borrow-btn">Borrow</button></a>
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="7" style="text-align:center;">No books available.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;">No books available.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
