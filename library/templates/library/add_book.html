@@ -27,13 +27,10 @@
         </div>
         <div class="form-row">
             <div class="form-column">
-                <label>Category</label>
-                <select name="category">
-                    {% for val, label in form.fields.category.choices %}
-                        <option value="{{ val }}" {% if form.category.value == val %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+    <label>Category</label>
+    <input type="text" name="category" value="{{ form.category.value|default:'' }}" placeholder="e.g. Programming, AI...">
+</div>
+
             <div class="form-column">
                 <label>Cover Image filename</label>
                 <input type="text" name="cover_image" value="{{ form.cover_image.value|default:'' }}" placeholder="e.g. AI Basics.jpg">
