@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from .models import Book
 
 User = get_user_model()
 
@@ -46,3 +47,26 @@ class SignupForm(forms.ModelForm):
 class LoginForm(forms.Form):
     email = forms.EmailField()  # validates email format automatically
     password = forms.CharField(widget=forms.PasswordInput)  # password field
+
+
+class BookForm(forms.ModelForm):
+    class Meta:
+        model = Book
+        fields = ['title', 'author', 'category', 'description', 'cover_image', 'available']
+
+    def __init__(self, *args, **kwargs):
+        self.current_book_id = kwargs.pop('current_book_id', None)
+        super().__init__(*args, **kwargs)
+        self.fields['title'].required = True
+        self.fields['author'].required = True
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        qs = Book.objects.filter(title__iexact=title)
+        if self.current_book_id:
+            qs = qs.exclude(id=self.current_book_id)
+        if qs.exists():
+            raise forms.ValidationError("A book with this title already exists.")
+        return title    
+
+
