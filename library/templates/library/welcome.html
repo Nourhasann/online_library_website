@@ -1,0 +1,19 @@
+{% extends 'library/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="welcome">
+    <h1>Welcome, {{ user.username }}! 👋</h1>
+    <br>
+    <a href="{% url 'book_list' %}" style="
+        background-color: #5c4033;
+        color: white;
+        padding: 14px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-size: 18px;
+    ">Browse Books</a>
+</div>
+
+{% endblock %}
