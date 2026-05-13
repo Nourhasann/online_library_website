@@ -161,3 +161,15 @@ def about_view(request):
 
 def contact_view(request):
     return render(request, 'library/contact.html')
+
+
+def search_page(request):
+    return render(request, "library/search.html")
+
+def search_books(request):
+    query = request.GET.get("q", "")
+    books = Book.objects.filter(title__icontains=query) | \
+            Book.objects.filter(author__icontains=query) | \
+            Book.objects.filter(category__icontains=query)
+    data = list(books.values("id", "title", "author", "category", "cover_image"))
+    return JsonResponse(data, safe=False)
