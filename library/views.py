@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -6,7 +6,6 @@ from .forms import SignupForm, BookForm
 from .models import Book, Borrow
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 User = get_user_model()
@@ -21,10 +20,7 @@ def signup_view(request):
             user.role = role
             user.save()
             login(request, user)
-            if user.role == 'admin':
-                return redirect('book_list')
-            else:
-                return redirect('book_list')
+            return redirect('welcome')
     return render(request, 'library/signup.html', {'form': form})
 
 
@@ -38,14 +34,11 @@ def login_view(request):
             user = authenticate(request, username=user_obj.username, password=password)
             if user is not None:
                 login(request, user)
-                if user.role == 'admin':
-                    return redirect('book_list')
-                else:
-                    return redirect('book_list')
+                return redirect('welcome')
             else:
                 error = 'Wrong email or password. Please try again.'
         except User.DoesNotExist:
-            return redirect('signup')
+            error = 'No account found with this email.'
     return render(request, 'library/login.html', {'error': error})
 
 
@@ -54,11 +47,63 @@ def logout_view(request):
     return redirect('login')
 
 
+def home_view(request):
+    return render(request, 'library/home.html')
+
+
+def welcome_view(request):
+    return render(request, 'library/welcome.html')
+
+
+def about_view(request):
+    return render(request, 'library/about.html')
+
+
+def contact_view(request):
+    return render(request, 'library/contact.html')
+
+
+def book_list_view(request):
+    books = Book.objects.all()
+    for book in books:
+        active_borrow = Borrow.objects.filter(book=book, returned=False).exists()
+        if not active_borrow and not book.available:
+            book.available = True
+            Book.objects.filter(id=book.id).update(available=True)
+        book.is_borrowed = active_borrow
+        if request.user.is_authenticated:
+            book.borrowed_by_me = Borrow.objects.filter(
+                book=book, user=request.user, returned=False
+            ).exists()
+        else:
+            book.borrowed_by_me = False
+    return render(request, 'library/book_list.html', {'books': books})
+
+
+def book_details_view(request, id):
+    book = get_object_or_404(Book, id=id)
+    is_borrowed = Borrow.objects.filter(book=book, returned=False).exists()
+    borrowed_by_me = False
+    if request.user.is_authenticated:
+        borrowed_by_me = Borrow.objects.filter(
+            book=book, user=request.user, returned=False
+        ).exists()
+    return render(request, 'library/book_details.html', {
+        'book': book,
+        'is_borrowed': is_borrowed,
+        'borrowed_by_me': borrowed_by_me,
+    })
+
+
 @login_required
 @require_POST
 def borrow_view(request, id):
     book = get_object_or_404(Book, id=id)
-    if not book.available:
+    already_borrowed = Borrow.objects.filter(book=book, returned=False).exists()
+    if already_borrowed or not book.available:
+        if not already_borrowed and not book.available:
+            book.available = True
+            book.save()
         return JsonResponse({'error': 'Book is not available'}, status=400)
     book.available = False
     book.save()
@@ -89,34 +134,6 @@ def borrowed_books_view(request):
         user=request.user, returned=False
     ).select_related('book')
     return render(request, 'library/borrowed_books.html', {'records': records})
-
-
-def book_list_view(request):
-    books = Book.objects.all()
-    for book in books:
-        book.is_borrowed = Borrow.objects.filter(book=book, returned=False).exists()
-        if request.user.is_authenticated:
-            book.borrowed_by_me = Borrow.objects.filter(
-                book=book, user=request.user, returned=False
-            ).exists()
-        else:
-            book.borrowed_by_me = False
-    return render(request, 'library/book_list.html', {'books': books})
-
-
-def book_details_view(request, id):
-    book = get_object_or_404(Book, id=id)
-    is_borrowed = Borrow.objects.filter(book=book, returned=False).exists()
-    borrowed_by_me = False
-    if request.user.is_authenticated:
-        borrowed_by_me = Borrow.objects.filter(
-            book=book, user=request.user, returned=False
-        ).exists()
-    return render(request, 'library/book_details.html', {
-        'book': book,
-        'is_borrowed': is_borrowed,
-        'borrowed_by_me': borrowed_by_me,
-    })
 
 
 @login_required
@@ -153,23 +170,14 @@ def delete_book_view(request, id):
     return render(request, 'library/book_list.html', {'books': Book.objects.all()})
 
 
-def home_view(request):
-    return render(request, 'library/home.html')
-
-def about_view(request):
-    return render(request, 'library/about.html')
-
-def contact_view(request):
-    return render(request, 'library/contact.html')
-
-
 def search_page(request):
-    return render(request, "library/search.html")
+    return render(request, 'library/search.html')
+
 
 def search_books(request):
-    query = request.GET.get("q", "")
+    query = request.GET.get('q', '')
     books = Book.objects.filter(title__icontains=query) | \
             Book.objects.filter(author__icontains=query) | \
             Book.objects.filter(category__icontains=query)
-    data = list(books.values("id", "title", "author", "category", "cover_image"))
+    data = list(books.values('id', 'title', 'author', 'category', 'cover_image'))
     return JsonResponse(data, safe=False)
