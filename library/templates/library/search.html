@@ -1,0 +1,63 @@
+{% extends 'library/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1 class="page-title">Search Books</h1>
+
+<div class="search-section">
+    <input type="text" id="searchBox" placeholder="🔍 Search by title, author, or category">
+    <button class="search-btn" onclick="searchBooks()">Search</button>
+</div>
+
+<div id="resultsContainer"></div>
+
+<script>
+const searchBox = document.getElementById("searchBox");
+const resultsContainer = document.getElementById("resultsContainer");
+
+// Search on button click
+function searchBooks() {
+    const query = searchBox.value;
+    fetchResults(query);
+}
+
+// Also search live as user types
+searchBox.addEventListener("keyup", function () {
+    fetchResults(searchBox.value);
+});
+
+function fetchResults(query) {
+    fetch(`/search/api/?q=${query}`)
+        .then(res => res.json())
+        .then(data => {
+            resultsContainer.innerHTML = "";
+
+            if (data.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <p>No books found matching "<strong>${query}</strong>".</p>
+                    </div>
+                `;
+                return;
+            }
+
+            data.forEach(book => {
+                resultsContainer.innerHTML += `
+                    <div class="book-card">
+                        <img src="/static/images/${book.cover_image}" alt="${book.title}"
+                             onerror="this.src='/static/default.jpg'">
+                        <div>
+                            <h3>${book.title}</h3>
+                            <p><strong>Author:</strong> ${book.author}</p>
+                            <p><strong>Category:</strong> ${book.category}</p>
+                            <a href="/books/${book.id}/">View Details</a>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+}
+</script>
+
+{% endblock %}
