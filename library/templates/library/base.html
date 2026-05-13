@@ -38,12 +38,7 @@
         </ul>
     </nav>
 
-    {% if user.is_authenticated %}
-        <p style="text-align:right; padding: 5px 20px; color: #5c4033;">
-            Welcome, {{ user.username }}!
-            {% if user.role == 'admin' %}(Admin){% else %}(Member){% endif %}
-        </p>
-    {% endif %}
+
 
     {% block content %}
     {% endblock %}
