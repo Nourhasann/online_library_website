@@ -22,7 +22,7 @@ class User(AbstractUser):    # we are creating our own user model by inheriting 
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=100)
-    category = models.CharField(max_length=100, blank=True)  # ← ADD THIS
+    category = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
     cover_image = models.CharField(max_length=200, blank=True)
     available = models.BooleanField(default=True)
