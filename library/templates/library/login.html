@@ -1,47 +1,23 @@
+{% extends 'library/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <title>Login Page</title>
-</head>
+{% block content %}
+<section class="login-container">
+    <h2>Login</h2>
 
-<body>
-    <div>
-        <nav class='navbar'>
-            <div class='logo'>
-                <h2>Online Library</h2>
-            </div>
-            <ul class="nav-links" id="nav-links">
-                <li><a href="#">About</a></li>
-                <li><a href="#">Contact</a></li>
-                <li><a href="{% url 'login' %}">Login</a></li>
-                <li><a href="{% url 'signup' %}">Sign Up</a></li>
-            </ul>
-        </nav>
-    </div>
+    {% if error %}
+    <p style="color:red;">{{ error }}</p>
+    {% endif %}
 
-    <section class="login-container">
-        <h2>Login</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Email:</label>
+        <input type="email" name="email" required>
+        <label>Password:</label>
+        <input type="password" name="password" required>
+        <input type="submit" value="Login">
+    </form>
 
-        {% if error %}
-        <p style="color:red;">{{ error }}</p>
-        {% endif %}
-
-        <form method="POST">
-            {% csrf_token %}
-            <label>Email:</label>
-            <input type="email" name="email" required>
-            <label>Password:</label>
-            <input type="password" name="password" required>
-            <input type="submit" value="Login">
-        </form>
-
-        <a href="{% url 'signup' %}">Create new account</a>
-    </section>
-</body>
-
-</html>
+    <a href="{% url 'signup' %}">Create new account</a>
+</section>
+{% endblock %}
