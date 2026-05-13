@@ -1,0 +1,35 @@
+{% extends 'library/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="messages-container">
+    <h1>User Messages</h1>
+
+    {% if user_messages %}
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Message</th>
+                <th>Sent At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for msg in user_messages %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ msg.name }}</td>
+                <td>{{ msg.email }}</td>
+                <td>{{ msg.body }}</td>
+                <td>{{ msg.sent_at|date:"M d, Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="no-messages">No messages yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
