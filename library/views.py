@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from .forms import SignupForm
+from .forms import SignupForm,BookForm
+from .models import Book, Borrow
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
@@ -106,3 +108,65 @@ def borrowed_books_view(request):
     
     return render(request, 'library/borrowed_books.html', {'records': records})
 
+
+def book_list_view(request):
+    books = Book.objects.all()
+    # Attach borrow status to each book
+    for book in books:
+        book.is_borrowed = Borrow.objects.filter(book=book, returned=False).exists()
+        if request.user.is_authenticated:
+            book.borrowed_by_me = Borrow.objects.filter(
+                book=book, user=request.user, returned=False
+            ).exists()
+        else:
+            book.borrowed_by_me = False
+    return render(request, 'library/book_list.html', {'books': books})
+
+
+def book_details_view(request, id):
+    book = get_object_or_404(Book, id=id)
+    is_borrowed = Borrow.objects.filter(book=book, returned=False).exists()
+    borrowed_by_me = False
+    if request.user.is_authenticated:
+        borrowed_by_me = Borrow.objects.filter(
+            book=book, user=request.user, returned=False
+        ).exists()
+    return render(request, 'library/book_details.html', {
+        'book': book,
+        'is_borrowed': is_borrowed,
+        'borrowed_by_me': borrowed_by_me,
+    })
+
+
+@login_required
+def add_book_view(request):
+    if request.user.role != 'admin':
+        return redirect('book_list')
+    form = BookForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('book_list')
+    return render(request, 'library/add_book.html', {'form': form})
+
+
+@login_required
+def edit_book_view(request, id):
+    if request.user.role != 'admin':
+        return redirect('book_list')
+    book = get_object_or_404(Book, id=id)
+    form = BookForm(request.POST or None, instance=book, current_book_id=id)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('book_details', id=id)
+    return render(request, 'library/edit_book.html', {'form': form, 'book': book})
+
+
+@login_required
+def delete_book_view(request, id):
+    if request.user.role != 'admin':
+        return redirect('book_list')
+    book = get_object_or_404(Book, id=id)
+    if request.method == 'POST':
+        book.delete()
+        return redirect('book_list')
+    return render(request, 'library/book_list.html', {'books': Book.objects.all()})
