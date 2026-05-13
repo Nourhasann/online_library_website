@@ -1,10 +1,13 @@
 body {
     margin: 0;
-    /*remove browsers auto margin to body*/
     font-family: Arial, sans-serif;
     background-color: #fdf6e3;
+    background-image: url('../images/guest_navbar_image.png');  /* adjust path if needed */
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: center;
 }
-
 
 /* Guest Page*/
 
@@ -16,7 +19,7 @@ body {
     align-items: center;
     /* horizontal center */
     text-align: center;
-    background-image: url("images/guest_navbar_image.png");
+    background-image: url('../images/guest_navbar_image.png');
     height: calc(100vh - 80px);
     /* full screen minus navbar */
     padding: 20px;
@@ -39,14 +42,14 @@ body {
 /* user navbar */
 
 .user {
-    background-image: url("images/guest_navbar_image.png");
+    background-image: url('../images/guest_navbar_image.png');
 }
 
 
 /* Admin navbar */
 
 .admin {
-    background-image: url("images/guest_navbar_image.png");
+    background-image: url('../images/guest_navbar_image.png');
 }
 
 
