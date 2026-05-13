@@ -27,13 +27,13 @@
     </thead>
     <tbody>
         {% for book in books %}
-        <tr>
+        <tr id="book-row-{{ book.id }}">
             <td>{{ book.id }}</td>
             <td>{{ book.title }}</td>
             <td>{{ book.author }}</td>
             <td>{{ book.category }}</td>
             {% if not request.user.is_authenticated or request.user.role != 'admin' %}
-            <td>
+            <td id="status-{{ book.id }}">
                 {% if book.is_borrowed %}
                     <span class="borrowed">Borrowed</span>
                 {% else %}
@@ -42,7 +42,7 @@
             </td>
             {% endif %}
             <td><a href="{% url 'book_details' book.id %}">View</a></td>
-            <td>
+            <td id="action-{{ book.id }}">
                 {% if request.user.is_authenticated and request.user.role == 'admin' %}
                     <a href="{% url 'edit_book' book.id %}"><button class="edit-btn">Edit</button></a>
                     &nbsp;
@@ -52,9 +52,9 @@
                     </form>
                 {% elif request.user.is_authenticated %}
                     {% if not book.is_borrowed %}
-                        <a href="{% url 'book_details' book.id %}"><button class="borrow-btn">Borrow</button></a>
+                        <button class="borrow-btn" data-book-id="{{ book.id }}" data-action="borrow">Borrow</button>
                     {% elif book.borrowed_by_me %}
-                        <a href="{% url 'book_details' book.id %}"><button class="return-btn">Return</button></a>
+                        <button class="return-btn" data-book-id="{{ book.id }}" data-action="return">Return</button>
                     {% else %}
                         <span style="color:#999;">—</span>
                     {% endif %}
@@ -68,5 +68,46 @@
         {% endfor %}
     </tbody>
 </table>
+
+<script>
+const csrfToken = '{{ csrf_token }}';
+
+document.addEventListener('click', async function(e) {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+
+    const bookId = btn.dataset.bookId;
+    const action = btn.dataset.action;
+    const url = `/books/${bookId}/${action}/`;
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+        if (action === 'borrow') {
+            alert('Book borrowed successfully!');
+            document.getElementById(`status-${bookId}`).innerHTML = '<span class="borrowed">Borrowed</span>';
+            btn.className = 'return-btn';
+            btn.textContent = 'Return';
+            btn.dataset.action = 'return';
+        } else {
+            alert('Book returned successfully!');
+            document.getElementById(`status-${bookId}`).innerHTML = '<span class="available">Available</span>';
+            btn.className = 'borrow-btn';
+            btn.textContent = 'Borrow';
+            btn.dataset.action = 'borrow';
+        }
+    } else {
+        alert(data.error || 'Something went wrong.');
+    }
+});
+</script>
 
 {% endblock %}
