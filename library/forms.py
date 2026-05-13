@@ -69,4 +69,3 @@ class BookForm(forms.ModelForm):
             raise forms.ValidationError("A book with this title already exists.")
         return title    
 
-
