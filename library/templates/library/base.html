@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Online Library</title>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <h2>Online Library</h2>
+        </div>
+        <ul class="nav-links">
+
+            {% if user.is_authenticated %}
+                {% if user.role == 'admin' %}
+                    <!-- Admin links -->
+                    <li><a href="#">Search</a></li>
+                    <li><a href="#">View Books</a></li>
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <!-- Member links -->
+                    <li><a href="#">Search</a></li>
+                    <li><a href="#">View Books</a></li>
+                    <li><a href="{% url 'borrowed_books' %}">My Borrowed Books</a></li>
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% endif %}
+            {% else %}
+                <!-- Visitor links -->
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'signup' %}">Sign Up</a></li>
+            {% endif %}
+
+        </ul>
+    </nav>
+
+    {% if user.is_authenticated %}
+        <p style="text-align:right; padding: 5px 20px; color: #5c4033;">
+            Welcome, {{ user.username }}!
+            {% if user.role == 'admin' %}(Admin){% else %}(Member){% endif %}
+        </p>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+</body>
+</html>
