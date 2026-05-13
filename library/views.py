@@ -7,6 +7,7 @@ from .models import Book, Borrow
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.utils import timezone
+from .models import Book, Borrow, Message
 
 User = get_user_model()
 
@@ -60,7 +61,29 @@ def about_view(request):
 
 
 def contact_view(request):
-    return render(request, 'library/contact.html')
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            name = request.user.get_full_name() or request.user.username
+            email = request.user.email
+        else:
+            name = request.POST.get('name', '').strip()
+            email = request.POST.get('email', '').strip()
+        body = request.POST.get('message', '').strip()
+        if name and email and body:
+            Message.objects.create(name=name, email=email, body=body)
+        return redirect('/contact/?sent=true')
+
+    success = request.GET.get('sent') == 'true'
+    return render(request, 'library/contact.html', {'success': success})
+
+
+@login_required
+def messages_view(request):
+    if request.user.role != 'admin':
+        return redirect('book_list')
+    msgs = Message.objects.all().order_by('-sent_at')
+    return render(request, 'library/user_messages.html', {'user_messages': msgs})
+
 
 
 def book_list_view(request):
