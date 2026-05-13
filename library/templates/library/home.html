@@ -1,0 +1,15 @@
+{% extends 'library/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="welcome">
+    <h1>Welcome to Our Online Library</h1>
+    <p>
+        Discover a world of knowledge at your fingertips. Our online library offers a wide collection 
+        of books, articles, and resources designed to support your learning, research, and personal growth. 
+        Whether you're a student, researcher, or casual reader, we are here to make your reading experience 
+        simple, accessible, and enjoyable.
+    </p>
+    <a href="{% url 'book_list' %}" style="margin-top:20px; display:inline-block; background-color:#5c4033; color:white; padding:12px 24px; border-radius:8px; text-decoration:none;">Browse Books</a>
+</div>
+{% endblock %}
