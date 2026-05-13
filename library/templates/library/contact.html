@@ -5,12 +5,64 @@
 <section class="contact-container">
     <h1>Contact Us</h1>
     <p>Have questions or feedback? We'd love to hear from you!</p>
+
+    {% if user.is_authenticated %}
+    <p style="color:#888; font-size:14px; margin-bottom:16px;">
+        Sending as <strong>{{ user.username }}</strong> ({{ user.email }})
+    </p>
+    {% endif %}
+
     <form class="contact-form" method="POST">
         {% csrf_token %}
-        <input type="text" placeholder="Your Name" required>
-        <input type="email" placeholder="Your Email" required>
-        <textarea placeholder="Your Message" rows="5" required></textarea>
+
+        {% if not user.is_authenticated %}
+        <input type="text" name="name" placeholder="Your Name" required>
+        <input type="email" name="email" placeholder="Your Email" required>
+        {% endif %}
+
+        <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
         <button type="submit">Send Message</button>
     </form>
 </section>
+
+{% if success %}
+<div id="success-overlay" style="
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+">
+    <div style="
+        background: white;
+        border-radius: 16px;
+        padding: 40px 50px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        max-width: 400px;
+        width: 90%;
+        animation: popIn 0.3s ease;
+    ">
+        <div style="font-size: 52px; margin-bottom: 12px;">✅</div>
+        <h2 style="color: #2d6a4f; margin-bottom: 10px;">Message Sent!</h2>
+        <p style="color: #555; margin-bottom: 24px;">Thank you for reaching out. We'll get back to you soon.</p>
+        <button onclick="window.location.href='/contact/'" style="
+            background: #5c3d2e;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+        ">OK</button>
+    </div>
+</div>
+
+<style>
+@keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+</style>
+{% endif %}
+
 {% endblock %}
