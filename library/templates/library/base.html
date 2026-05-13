@@ -17,19 +17,16 @@
 
             {% if user.is_authenticated %}
                 {% if user.role == 'admin' %}
-                    <!-- Admin links -->
                     <li><a href="#">Search</a></li>
-                    <li><a href="#">View Books</a></li>
+                    <li><a href="{% url 'book_list' %}">View Books</a></li>
                     <li><a href="{% url 'logout' %}">Logout</a></li>
                 {% else %}
-                    <!-- Member links -->
                     <li><a href="#">Search</a></li>
-                    <li><a href="#">View Books</a></li>
+                    <li><a href="{% url 'book_list' %}">View Books</a></li>
                     <li><a href="{% url 'borrowed_books' %}">My Borrowed Books</a></li>
                     <li><a href="{% url 'logout' %}">Logout</a></li>
                 {% endif %}
             {% else %}
-                <!-- Visitor links -->
                 <li><a href="{% url 'login' %}">Login</a></li>
                 <li><a href="{% url 'signup' %}">Sign Up</a></li>
             {% endif %}
