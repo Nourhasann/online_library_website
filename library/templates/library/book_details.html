@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>{{ book.title }}</title>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><h2>Online Library</h2></div>
+        <ul class="nav-links">
+            {% if request.user.is_authenticated %}
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'signup' %}">Sign Up</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <a href="{% url 'book_list' %}" class="back-button">Back</a>
+    <h2 class="page-title">{{ book.title }}</h2>
+
+    <div style="text-align:center; margin-top:30px;">
+        <img src="{% static book.cover_image %}" width="200" alt="{{ book.title }}">
+        <br><br>
+        <table style="margin:auto;">
+            <tr><td><b>Author</b></td><td>{{ book.author }}</td></tr>
+            <tr><td><b>Category</b></td><td>{{ book.category }}</td></tr>
+            <tr>
+                <td><b>Status</b></td>
+                <td>
+                    {% if is_borrowed %}
+                        <span class="borrowed">Borrowed</span>
+                    {% else %}
+                        <span class="available">Available</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr><td><b>Description</b></td><td>{{ book.description }}</td></tr>
+        </table>
+        <br>
+
+        <div style="display:flex; justify-content:center; gap:15px; margin-top:10px;">
+            {% if request.user.is_authenticated and request.user.role == 'admin' %}
+                <a href="{% url 'edit_book' book.id %}"><button class="edit-btn">Edit</button></a>
+                <form method="POST" action="{% url 'delete_book' book.id %}">
+                    {% csrf_token %}
+                    <button class="delete-btn" onclick="return confirm('Delete this book?')">Delete</button>
+                </form>
+            {% elif request.user.is_authenticated %}
+                {% if not is_borrowed %}
+                    <form method="POST" action="{% url 'borrow_book' book.id %}">
+                        {% csrf_token %}
+                        <button class="borrow-btn">Borrow</button>
+                    </form>
+                {% elif borrowed_by_me %}
+                    <form method="POST" action="{% url 'return_book' book.id %}">
+                        {% csrf_token %}
+                        <button class="return-btn">Return Book</button>
+                    </form>
+                {% else %}
+                    <p class="unavailable-msg">This book is currently unavailable.</p>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'login' %}"><button class="borrow-btn">Login to Borrow</button></a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
