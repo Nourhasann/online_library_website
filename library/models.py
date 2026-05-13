@@ -40,3 +40,13 @@ class Borrow(models.Model):
     returned = models.BooleanField(default=False) # This field indicates whether the book has been returned or not. It defaults to False when a book is borrowed and can be set to True when the book is returned.
     def __str__(self):  
         return f"{self.user.username} borrowed {self.book.title}"
+    
+
+class Message(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    body = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.email}"    
