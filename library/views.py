@@ -8,6 +8,8 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.utils import timezone
 from .models import Book, Borrow, Message
+from django.urls import reverse
+from .forms import SignupForm, BookForm, ContactForm
 
 User = get_user_model()
 
@@ -61,20 +63,26 @@ def about_view(request):
 
 
 def contact_view(request):
+    form = ContactForm()
     if request.method == 'POST':
         if request.user.is_authenticated:
-            name = request.user.get_full_name() or request.user.username
-            email = request.user.email
+            data = request.POST.copy()
+            data['name'] = request.user.username
+            data['email'] = request.user.email
+            form = ContactForm(data)
         else:
-            name = request.POST.get('name', '').strip()
-            email = request.POST.get('email', '').strip()
-        body = request.POST.get('message', '').strip()
-        if name and email and body:
-            Message.objects.create(name=name, email=email, body=body)
-        return redirect('/contact/?sent=true')
+            form = ContactForm(request.POST)
+
+        if form.is_valid():
+            Message.objects.create(
+                name=form.cleaned_data['name'],
+                email=form.cleaned_data['email'],
+                body=form.cleaned_data['message']
+            )
+            return redirect(f"{reverse('contact')}?sent=true")
 
     success = request.GET.get('sent') == 'true'
-    return render(request, 'library/contact.html', {'success': success})
+    return render(request, 'library/contact.html', {'form': form, 'success': success})
 
 
 @login_required
