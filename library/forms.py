@@ -62,3 +62,13 @@ class BookForm(forms.ModelForm):
         if qs.exists():
             raise forms.ValidationError("A book with this title already exists.")
         return title
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=100, required=True)
+    email = forms.EmailField(required=True)
+    message = forms.CharField(
+        widget=forms.Textarea,
+        min_length=10,
+        required=True,
+        error_messages={'min_length': 'Message must be at least 10 characters.'}
+    )
