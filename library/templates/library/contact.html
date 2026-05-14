@@ -16,10 +16,20 @@
         {% csrf_token %}
 
         {% if not user.is_authenticated %}
+        {% if form.name.errors %}
+            <p style="color:red; font-size:13px; text-align:left;">{{ form.name.errors.0 }}</p>
+        {% endif %}
         <input type="text" name="name" placeholder="Your Name" required>
+
+        {% if form.email.errors %}
+            <p style="color:red; font-size:13px; text-align:left;">{{ form.email.errors.0 }}</p>
+        {% endif %}
         <input type="email" name="email" placeholder="Your Email" required>
         {% endif %}
 
+        {% if form.message.errors %}
+            <p style="color:red; font-size:13px; text-align:left;">{{ form.message.errors.0 }}</p>
+        {% endif %}
         <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
         <button type="submit">Send Message</button>
     </form>
