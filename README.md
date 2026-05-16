@@ -71,6 +71,6 @@ The backend follows Django’s MVT architecture and includes:
 
 ## Contibutors
 - [Malak Hassan](https://github.com/Malakhassan8)
-- [Nour Hassan](https://github.com/Nourhasann)
+- [Nour Mohamed](https://github.com/Nour131)
 - [Rabab Mohamed](https://github.com/Rabab-Okasha)
 - [Steven Onsi](https://github.com/stevenonsi)
